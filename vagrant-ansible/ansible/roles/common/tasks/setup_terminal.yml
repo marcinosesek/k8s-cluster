@@ -1,0 +1,34 @@
+- name: Set facts for terminal setup
+  set_fact:
+    vimrc_file: "{{ HOME_DIR }}/.vimrc"
+    bashrc_file: "{{ HOME_DIR }}/.bashrc"
+
+- name: Get stats of a {{ vimrc_file }}
+  ansible.builtin.stat:
+    path: "{{ vimrc_file }}"
+  register: vimrc_state
+
+- name: Create {{ vimrc_file }} file, if it doesnt exist already
+  ansible.builtin.file:
+    path: "{{ vimrc_file }}"
+    state: touch
+  when: not vimrc_state.stat.exists
+
+- name: Insert/Update terminal configuration in {{ vimrc_file }}
+  blockinfile:
+    path: "{{ vimrc_file }}"
+    block: |
+      colorscheme ron
+      set tabstop=2
+      set shiftwidth=2
+      set expandtab
+
+- name: Insert/Update terminal configuration in {{ bashrc_file }}
+  blockinfile:
+    path: "{{ bashrc_file }}"
+    block: |
+      source <(kubectl completion bash)
+      alias k=kubectl
+      alias c=clear
+      complete -F __start_kubectl k
+      force_color_prompt=yes

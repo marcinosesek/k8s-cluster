@@ -1,0 +1,4 @@
+---
+# tasks file for addons
+- include: deploy_weave.yml
+  tags: [addons, all, weave]

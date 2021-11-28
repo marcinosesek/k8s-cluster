@@ -1,0 +1,8 @@
+- name: Reset K8S Cluster state
+  become: yes
+  ansible.builtin.shell: kubeadm reset -f
+
+- name: Join worker node to k8s cluster
+  become: yes
+  ansible.builtin.shell: "{{ JOIN_CLUSTER_SCRIPT }}"
+  

@@ -1,0 +1,37 @@
+- name: Remove {{ K8S_CONFIG_FILE }} file
+  become: yes
+  ansible.builtin.file:
+    path: "{{ K8S_CONFIG_FILE }}"
+    state: absent
+
+- name: Reset K8S Cluster state
+  become: yes
+  ansible.builtin.shell: kubeadm reset -f
+
+- name: Get IP address of {{ INTERFACE_NAME }} interface
+  ansible.builtin.shell: ip -4 addr show {{ INTERFACE_NAME }} | grep "inet" | head -1 |awk '{print $2}' | cut -d/ -f1
+  register: host_ip_var
+
+- name: Initialize K8S Cluster {{ K8S_VERSION }} 
+  become: yes
+  ansible.builtin.shell: kubeadm init --kubernetes-version={{ K8S_VERSION }} --apiserver-advertise-address {{ host_ip_var.stdout }} --pod-network-cidr {{ K8S_POD_NETWORK_CIDR }}
+
+- name: Create {{ K8S_CONFIG_DIR }} directory if it does not exist
+  ansible.builtin.file:
+    path: "{{ K8S_CONFIG_DIR }}"
+    state: directory
+
+- name: Copy k8s config to {{ K8S_CONFIG_FILE }}
+  become: true
+  command: cp /etc/kubernetes/admin.conf {{ K8S_CONFIG_FILE }}
+
+- name: Change {{ K8S_CONFIG_DIR }} owner to {{ USER_NAME }}:{{ USER_NAME }}
+  become: true
+  command: chown -R {{ USER_NAME }}:{{ USER_NAME }} {{ K8S_CONFIG_DIR }}
+
+- name: Copy k8s config to {{ LOCAL_KUBECONFIG }}
+  become: true
+  command: cp /etc/kubernetes/admin.conf {{ LOCAL_KUBECONFIG }}
+
+- name: Create K8s join command
+  ansible.builtin.shell: kubeadm token create --print-join-command --ttl 0 > {{ JOIN_CLUSTER_SCRIPT }} && chmod +x {{ JOIN_CLUSTER_SCRIPT }}

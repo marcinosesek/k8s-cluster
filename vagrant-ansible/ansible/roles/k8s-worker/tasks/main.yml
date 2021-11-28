@@ -1,0 +1,4 @@
+---
+# tasks file for k8s-worker
+- include: k8s_init.yml
+  tags: [all, k8s-init]

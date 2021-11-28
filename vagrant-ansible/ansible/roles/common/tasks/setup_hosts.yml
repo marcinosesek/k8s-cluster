@@ -1,0 +1,42 @@
+- name: Get IP address of {{ INTERFACE_NAME }} interface
+  ansible.builtin.shell: ip -4 addr show {{ INTERFACE_NAME }} | grep "inet" | head -1 |awk '{print $2}' | cut -d/ -f1
+  register: host_ip_var
+
+- name: Get Hostname
+  ansible.builtin.command: hostname
+  register: hostname_var
+
+- name: Set facts
+  set_fact:
+    host_ip: "{{ host_ip_var.stdout }}"
+    host_name: "{{ hostname_var.stdout }}"
+    hosts_config_file: "/etc/hosts"
+
+- name: Replace a localhost entry with our own
+  become: yes
+  ansible.builtin.lineinfile:
+    path: "{{ hosts_config_file }}"
+    regexp: '^127\.0\.0\.1 {{ host_name }}'
+    line: "{{ host_ip }} {{ host_name }} {{ host_name }}.local"
+
+- name: Make sure ubuntu-bionic is not in the {{ hosts_config_file }}
+  become: yes
+  ansible.builtin.lineinfile:
+    path: "{{ hosts_config_file }}"
+    state: absent
+    regexp: '^.*ubuntu-bionic'
+
+- name: Make sure ubuntu-bionic is not in the {{ hosts_config_file }}
+  become: yes
+  ansible.builtin.lineinfile:
+    path: "{{ hosts_config_file }}"
+    state: absent
+    regexp: '^.*ubuntu-bionic'
+
+- name: Check {{ hosts_config_file }}
+  command: cat {{ hosts_config_file }}
+  register: hosts_output
+
+- name: Print {{ hosts_config_file }}
+  ansible.builtin.debug:
+    var: hosts_output

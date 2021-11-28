@@ -1,0 +1,16 @@
+- name: Set facts
+  set_fact:
+    resolved_conf_file: "/etc/systemd/resolved.conf"
+
+- name: Replace a localhost entry with our own
+  become: yes
+  ansible.builtin.lineinfile:
+    path: "{{ resolved_conf_file }}"
+    regexp: '#DNS='
+    line: "#DNS=DNS=8.8.8.8"
+
+- name: Restart service systemd-resolved
+  become: yes
+  ansible.builtin.service:
+    name: systemd-resolved
+    state: restarted

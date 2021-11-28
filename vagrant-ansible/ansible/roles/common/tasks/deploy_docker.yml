@@ -1,0 +1,85 @@
+- name: Set facts for docker
+  set_fact:
+    daemon_json_file: "/etc/docker/daemon.json"
+    docker_service_dir: "/etc/systemd/system/docker.service.d"
+
+- name: Uninstall Docker packages
+  become: yes
+  apt:
+    name: docker.io
+    state: absent
+
+- name: Remove Docker dependencies that are no longer required
+  become: yes
+  apt:
+    autoremove: yes
+
+- name: Restart systemd-resolved service
+  become: yes
+  ansible.builtin.service:
+    name: systemd-resolved
+    daemon_reload: yes
+    state: restarted
+
+- name: Install Docker packages
+  become: yes
+  apt:
+    name: docker.io
+    state: present
+
+- name: Create {{ docker_service_dir }} directory if it does not exist
+  become: yes
+  ansible.builtin.file:
+    path: "{{ docker_service_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Get stats of {{ daemon_json_file }}
+  ansible.builtin.stat:
+    path: "{{ daemon_json_file }}"
+  register: daemon_json_state
+
+- name: Create {{ daemon_json_file }} file, if it doesnt exist already
+  become: yes
+  ansible.builtin.file:
+    path: "{{ daemon_json_file }}"
+    state: touch
+  when: not daemon_json_state.stat.exists
+
+- name: Update {{ daemon_json_file }}
+  become: yes
+  blockinfile:
+    path: "{{ daemon_json_file }}"
+    marker: ""
+    block: |
+      {
+        "exec-opts": ["native.cgroupdriver=systemd"],
+        "log-driver": "json-file",
+        "storage-driver": "overlay2"
+      }
+
+- name: Restart Docker service
+  become: yes
+  ansible.builtin.service:
+    name: docker
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+
+- name: Check Docker storage
+  become: yes
+  ansible.builtin.shell: docker info | grep -i "storage"
+  register: docker_storage
+
+- name: Print Docker storage
+  ansible.builtin.debug:
+    var: docker_storage
+
+- name: Check Docker cgroup
+  become: yes
+  ansible.builtin.shell: docker info | grep -i "cgroup"
+  register: docker_cgroup
+
+- name: Print Docker cgroup
+  ansible.builtin.debug:
+    var: docker_cgroup

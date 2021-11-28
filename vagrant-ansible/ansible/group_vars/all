@@ -1,0 +1,18 @@
+# OS VARS
+INTERFACE_NAME: "enp0s8"
+USER_NAME: "vagrant"
+HOME_DIR: "/home/{{ USER_NAME }}"
+CONTAINER_RUNTIME: "docker"
+LOCAL_KUBECONFIG: "{{ HOME_DIR }}/vagrant-ansible/vagrant-ansible/local-k8s.kubeconfig"
+JOIN_CLUSTER_SCRIPT: "{{ HOME_DIR }}/vagrant-ansible/vagrant-ansible/ansible/roles/k8s-worker/files/join_k8s_cluster.sh"
+
+# K8S VARS
+K8S_VERSION: "1.22.2"
+K8S_POD_NETWORK_CIDR: "10.244.0.0/16"
+K8S_CONFIG_DIR: "{{ HOME_DIR }}/.kube"
+K8S_CONFIG_FILE: "{{ K8S_CONFIG_DIR }}/config"
+K8S_MANIFESTS_DIR: "{{ HOME_DIR }}/manifests"
+
+# CNI
+CNI: "weave"
+WEAVE_URL: "https://cloud.weave.works/k8s/net?k8s-version={{ K8S_VERSION }}"

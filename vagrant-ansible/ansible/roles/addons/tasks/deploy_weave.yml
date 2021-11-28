@@ -1,0 +1,14 @@
+- name: Create {{ K8S_MANIFESTS_DIR }} directory if it does not exist
+  ansible.builtin.file:
+    path: "{{ K8S_MANIFESTS_DIR }}"
+    state: directory
+
+# Download and apply manifest
+- name: Download Weave manifest to the cluster.
+  ansible.builtin.get_url:
+    url: "{{ WEAVE_URL }}"
+    dest: "{{ K8S_MANIFESTS_DIR }}/weave-manifest.yaml"
+    mode: '0664'
+
+- name: Apply Weave manifest to the cluster.
+  ansible.builtin.command: kubectl apply -f "{{ K8S_MANIFESTS_DIR }}/weave-manifest.yaml"

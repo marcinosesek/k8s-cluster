@@ -1,0 +1,10 @@
+---
+# tasks file for k8s-master
+- include: k8s_init.yml
+  tags: [all, k8s-init]
+
+- name: Deploy Weave CNI
+  include_role:
+    name: addons
+    tasks_from: deploy_weave
+  when: "{{ CNI == 'weave' }}"

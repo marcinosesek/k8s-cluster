@@ -1,0 +1,10 @@
+- name: Install packages
+  become: yes
+  apt:
+    update_cache: yes
+    pkg:
+    - bash-completion
+    - binutils
+    - build-essential
+    - etcd-client
+    - vim

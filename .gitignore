@@ -1,0 +1,5 @@
+# Ignore .vagrant folder
+**.vagrant
+
+# Ignore logs 
+**.log

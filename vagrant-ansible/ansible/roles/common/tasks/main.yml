@@ -1,0 +1,18 @@
+---
+- include: install_os_packages.yml
+  tags: [all, packages]
+
+- include: setup_hosts.yml
+  tags: [all, hosts]
+
+- include: update_dns.yml
+  tags: [all, dns]
+
+- include: setup_terminal.yml
+  tags: [all, terminal]
+
+- include: deploy_docker.yml
+  tags: [all, docker]
+
+- include: install_k8s_packages.yml
+  tags: [all, k8s-packages]
